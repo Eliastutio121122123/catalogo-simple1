@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de lista de Catálogos -->
+    <record id="view_catalog_tree" model="ir.ui.view">
+        <field name="name">catalog.catalog.tree</field>
+        <field name="model">catalog.catalog</field>
+        <field name="arch" type="xml">
+            <tree string="Catálogos">
+                <field name="name"/>
+                <field name="vendor_id"/>
+                <field name="product_count"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de formulario de Catálogo -->
+    <record id="view_catalog_form" model="ir.ui.view">
+        <field name="name">catalog.catalog.form</field>
+        <field name="model">catalog.catalog</field>
+        <field name="arch" type="xml">
+            <form string="Catálogo">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="vendor_id"/>
+                        <field name="image_url"/>
+                        <field name="active"/>
+                    </group>
+                    <field name="description"/>
+                    <notebook>
+                        <page string="Productos">
+                            <field name="product_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="list_price"/>
+                                    <field name="qty_available"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción de menú -->
+    <record id="action_catalog_catalog" model="ir.actions.act_window">
+        <field name="name">Catálogos</field>
+        <field name="res_model">catalog.catalog</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

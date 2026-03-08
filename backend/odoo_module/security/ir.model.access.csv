@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_catalog_user,catalog.catalog user,model_catalog_catalog,base.group_user,1,0,0,0
+access_catalog_manager,catalog.catalog manager,model_catalog_catalog,base.group_system,1,1,1,1
+access_catalog_coupon_user,catalog.coupon user,model_catalog_coupon,base.group_user,1,1,1,1
+access_catalog_coupon_manager,catalog.coupon manager,model_catalog_coupon,base.group_system,1,1,1,1
