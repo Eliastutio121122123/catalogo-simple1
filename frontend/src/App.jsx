@@ -18,6 +18,7 @@ import OrderConfirmation from "./pages/store/OrderConfirmation";
 import PaymentResult     from "./pages/store/PaymentResult";
 import Search            from "./pages/store/Search";
 import ProductDetail     from "./pages/store/ProductDetail";
+import FlowPrototype     from "./pages/prototype/FlowPrototype";
 
 // Layouts
 import AuthLayout        from "./layouts/AuthLayout";
@@ -50,17 +51,17 @@ import VendorReports from "./pages/vendor/Reports";
 import VendorSettings from "./pages/vendor/Settings";
 // import VendorPromotions  from "./pages/vendor/VendorPromotions";
 
-// Admin pages (pendientes)
-// import AdminDashboard from "./pages/admin/AdminDashboard";
-// import AdminUsers     from "./pages/admin/AdminUsers";
-// import AdminVendors   from "./pages/admin/AdminVendors";
-// import AdminCatalogs  from "./pages/admin/AdminCatalogs";
-// import AdminProducts  from "./pages/admin/AdminProducts";
-// import AdminOrders    from "./pages/admin/AdminOrders";
-// import AdminPayments  from "./pages/admin/AdminPayments";
-// import AdminReports   from "./pages/admin/AdminReports";
-// import AdminAudit     from "./pages/admin/AdminAuditLog";
-// import AdminSettings  from "./pages/admin/AdminSettings";
+// Admin pages
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminUsers     from "./pages/admin/Users";
+import AdminVendors   from "./pages/admin/Vendors";
+import AdminCatalogs  from "./pages/admin/Catalogs";
+import AdminProducts  from "./pages/admin/Products";
+import AdminOrders    from "./pages/admin/Orders";
+import AdminPayments  from "./pages/admin/Payments";
+import AdminReports   from "./pages/admin/Reports";
+import AdminAudit     from "./pages/admin/AuditLog";
+import AdminSettings  from "./pages/admin/Settings";
 
 // Customer pages (pendientes)
 import CustomerChangePassword from "./pages/customer/ChangePassword";
@@ -151,22 +152,23 @@ export default function App() {
           <Route path="/checkout"           element={<Checkout />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/payment-result"     element={<PaymentResult />} />
+          <Route path="/prototype"          element={<FlowPrototype />} />
 
           {/* ════════════════════════════════
               ADMIN PANEL
           ════════════════════════════════ */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            {/* <Route path="dashboard" element={<AdminDashboard />} /> */}
-            {/* <Route path="users"     element={<AdminUsers />} />     */}
-            {/* <Route path="vendors"   element={<AdminVendors />} />   */}
-            {/* <Route path="catalogs"  element={<AdminCatalogs />} />  */}
-            {/* <Route path="products"  element={<AdminProducts />} />  */}
-            {/* <Route path="orders"    element={<AdminOrders />} />    */}
-            {/* <Route path="payments"  element={<AdminPayments />} />  */}
-            {/* <Route path="reports"   element={<AdminReports />} />   */}
-            {/* <Route path="audit"     element={<AdminAudit />} />     */}
-            {/* <Route path="settings"  element={<AdminSettings />} />  */}
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users"     element={<AdminUsers />} />
+            <Route path="vendors"   element={<AdminVendors />} />
+            <Route path="catalogs"  element={<AdminCatalogs />} />
+            <Route path="products"  element={<AdminProducts />} />
+            <Route path="orders"    element={<AdminOrders />} />
+            <Route path="payments"  element={<AdminPayments />} />
+            <Route path="reports"   element={<AdminReports />} />
+            <Route path="audit"     element={<AdminAudit />} />
+            <Route path="settings"  element={<AdminSettings />} />
           </Route>
 
           {/* ════════════════════════════════

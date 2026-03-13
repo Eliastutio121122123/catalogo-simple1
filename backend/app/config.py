@@ -19,6 +19,7 @@ class Config:
     # JWT
     JWT_SECRET       = os.getenv("JWT_SECRET", "jwt-secret-key")
     JWT_EXPIRY_HOURS = int(os.getenv("JWT_EXPIRY_HOURS", "24"))
+    JWT_REFRESH_DAYS = int(os.getenv("JWT_REFRESH_DAYS", "30"))
     RESET_TOKEN_MINUTES = int(os.getenv("RESET_TOKEN_MINUTES", "30"))
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
     SEND_RESET_EMAIL = os.getenv("SEND_RESET_EMAIL", "false").lower() == "true"

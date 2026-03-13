@@ -30,6 +30,16 @@ def issue_jwt(uid: int) -> str:
     }, current_app.config["JWT_SECRET"], algorithm="HS256")
 
 
+def issue_refresh_token(uid: int) -> str:
+    return jwt.encode({
+        "uid": uid,
+        "purpose": "refresh",
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(
+            days=current_app.config["JWT_REFRESH_DAYS"]
+        ),
+    }, current_app.config["JWT_SECRET"], algorithm="HS256")
+
+
 def issue_purpose_token(uid: int, purpose: str, minutes: int = 30) -> str:
     return jwt.encode({
         "uid": uid,
@@ -84,7 +94,8 @@ def login():
     try:
         result = odoo_login(email, password)
         token = issue_jwt(result["uid"])
-        return success({"token": token, "user": result["user"]})
+        refresh_token = issue_refresh_token(result["uid"])
+        return success({"token": token, "refresh_token": refresh_token, "user": result["user"]})
     except PermissionError:
         return error("Invalid email or password", 401)
     except LookupError as exc:
@@ -130,6 +141,32 @@ def register():
 def logout():
     # JWT is stateless: logout is handled on the client by deleting token.
     return success({"message": "Logged out"})
+
+
+@bp.post("/refresh")
+def refresh():
+    data = request.get_json() or {}
+    err = require_fields(data, ["refresh_token"])
+    if err:
+        return error(err, 400)
+
+    try:
+        payload = decode_token(str(data["refresh_token"]))
+    except jwt.ExpiredSignatureError:
+        return error("Refresh token expired", 401)
+    except jwt.InvalidTokenError:
+        return error("Invalid refresh token", 401)
+
+    if payload.get("purpose") != "refresh":
+        return error("Invalid refresh token purpose", 401)
+
+    uid = payload.get("uid")
+    if not uid:
+        return error("Invalid refresh token payload", 401)
+
+    token = issue_jwt(int(uid))
+    refresh_token = issue_refresh_token(int(uid))
+    return success({"token": token, "refresh_token": refresh_token})
 
 
 @bp.post("/forgot-password")

@@ -1,6 +1,7 @@
 from .client import odoo
 
-USER_FIELDS = ["id", "name", "email", "phone", "partner_id", "group_ids", "login"]
+USER_FIELDS_BASE = ["id", "name", "email", "phone", "partner_id", "login"]
+_GROUPS_FIELD = None
 
 ROLE_VENDOR = "vendor"
 ROLE_CUSTOMER = "customer"
@@ -141,14 +142,39 @@ def _role_from_groups(group_ids: list[int] | None) -> str:
     return ROLE_CUSTOMER
 
 
+def _groups_field_name() -> str:
+    global _GROUPS_FIELD
+    if _GROUPS_FIELD:
+        return _GROUPS_FIELD
+
+    try:
+        fields = odoo.call("res.users", "fields_get", [], {"attributes": ["type"]})
+    except Exception:
+        fields = {}
+
+    if "groups_id" in fields:
+        _GROUPS_FIELD = "groups_id"
+    elif "group_ids" in fields:
+        _GROUPS_FIELD = "group_ids"
+    else:
+        _GROUPS_FIELD = "groups_id"
+
+    return _GROUPS_FIELD
+
+
+def _user_fields() -> list[str]:
+    return USER_FIELDS_BASE + [_groups_field_name()]
+
+
 def _normalize_user(user: dict) -> dict:
     out = dict(user)
-    out["role"] = _role_from_groups(out.get("group_ids") or [])
+    groups = out.get(_groups_field_name()) or out.get("groups_id") or out.get("group_ids") or []
+    out["role"] = _role_from_groups(groups)
     return out
 
 
 def get_user_by_id(uid: int) -> dict:
-    results = odoo.search_read("res.users", [["id", "=", uid]], USER_FIELDS, limit=1)
+    results = odoo.search_read("res.users", [["id", "=", uid]], _user_fields(), limit=1)
     if not results:
         raise LookupError(f"User {uid} not found")
     return _normalize_user(results[0])
@@ -159,7 +185,7 @@ def get_user_by_email(email: str) -> dict | None:
     results = odoo.search_read(
         "res.users",
         ["|", ["login", "=", normalized], ["email", "=", normalized]],
-        USER_FIELDS,
+        _user_fields(),
         limit=1,
     )
     return _normalize_user(results[0]) if results else None
@@ -190,7 +216,7 @@ def create_user(
 
     groups = _resolve_role_groups(role)
     if groups:
-        values["group_ids"] = [(6, 0, groups)]
+        values[_groups_field_name()] = [(6, 0, groups)]
 
     uid = odoo.create("res.users", values)
 
@@ -201,7 +227,7 @@ def create_user(
         if created.get("role") != ROLE_VENDOR:
             fallback_gid = _pick_vendor_group_from_category()
             if fallback_gid:
-                odoo.write("res.users", [uid], {"group_ids": [(4, fallback_gid)]})
+                odoo.write("res.users", [uid], {_groups_field_name(): [(4, fallback_gid)]})
 
     return uid
 

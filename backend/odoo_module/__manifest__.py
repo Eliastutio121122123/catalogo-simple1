@@ -1,10 +1,10 @@
 {
     "name":        "Catalogix Digital",
-    "version":     "17.0.1.0.0",
+    "version":     "19.0.1.0.0",
     "summary":     "Módulo de catálogo digital para Catalogix",
     "author":      "Catalogix",
     "category":    "Sales/Catalog",
-    "depends":     ["base", "sale", "product", "website"],
+    "depends":     ["base", "sale", "product", "website", "account", "mail"],
     "data": [
         "security/ir.model.access.csv",
         "views/catalog_views.xml",

@@ -1,16 +1,19 @@
 import { api } from "./odooClient";
 
 const TOKEN_KEY = "catalogix_token";
+const REFRESH_KEY = "catalogix_refresh_token";
 const USER_KEY  = "catalogix_user";
 
 // ─── Helpers de almacenamiento ────────────────────────────────────────────────
-const saveSession  = (token, user) => {
+const saveSession  = (token, user, refreshToken = "") => {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
 };
 
 const clearSession = () => {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem(USER_KEY);
 };
 
@@ -23,7 +26,7 @@ const authService = {
    */
   login: async (email, password) => {
     const data = await api.post("/api/auth/login", { email, password });
-    saveSession(data.token, data.user);
+    saveSession(data.token, data.user, data.refresh_token);
     return data.user;
   },
 

@@ -1,11 +1,60 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const TOKEN_KEY = "catalogix_token";
+const REFRESH_KEY = "catalogix_refresh_token";
+const USER_KEY = "catalogix_user";
+
+const clearSession = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+  localStorage.removeItem(USER_KEY);
+};
+
+let refreshPromise = null;
+
+async function refreshAccessToken() {
+  if (refreshPromise) return refreshPromise;
+
+  const refreshToken = localStorage.getItem(REFRESH_KEY);
+  if (!refreshToken) throw new Error("No refresh token");
+
+  refreshPromise = (async () => {
+    const res = await fetch(`${BASE_URL}/api/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    const raw = await res.text();
+    let data = null;
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!res.ok || !data || !data.ok) {
+      throw new Error((data && data.error) || res.statusText || "Error de red");
+    }
+
+    const nextToken = data.data && data.data.token;
+    const nextRefresh = data.data && data.data.refresh_token;
+    if (nextToken) localStorage.setItem(TOKEN_KEY, nextToken);
+    if (nextRefresh) localStorage.setItem(REFRESH_KEY, nextRefresh);
+    return nextToken;
+  })();
+
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshPromise = null;
+  }
+}
 
 /**
  * Cliente HTTP base.
- * Agrega automáticamente el token JWT si existe en localStorage.
+ * Agrega automaticamente el token JWT si existe en localStorage.
  */
-async function request(method, endpoint, body = null) {
-  const token = localStorage.getItem("catalogix_token");
+async function request(method, endpoint, body = null, allowRetry = true) {
+  const token = localStorage.getItem(TOKEN_KEY);
 
   const headers = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -24,7 +73,20 @@ async function request(method, endpoint, body = null) {
 
   // Backend esperado: { ok: true, data } o { ok: false, error }.
   if (!res.ok) {
-    throw new Error((data && data.error) || res.statusText || "Error de red");
+    const errMsg = (data && data.error) || res.statusText || "Error de red";
+    if (res.status === 401 && token && !endpoint.startsWith("/api/auth/") && allowRetry) {
+      try {
+        await refreshAccessToken();
+        return await request(method, endpoint, body, false);
+      } catch {
+        clearSession();
+        if (typeof window !== "undefined") {
+          window.location.assign("/login");
+        }
+        throw new Error("Sesion expirada. Inicia sesion de nuevo.");
+      }
+    }
+    throw new Error(errMsg);
   }
   if (!data || !data.ok) {
     throw new Error((data && data.error) || "Respuesta invalida del servidor");
